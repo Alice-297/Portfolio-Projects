@@ -1,0 +1,129 @@
+Module 1
+Task 1: Exploring NASA's Data Universe.
+#--- Import Pandas ---
+importpandasaspd
+#--- Read in dataset ----
+df=pd.read_csv('nasa.csv')
+​
+​
+# ---WRITE YOUR CODE FOR TASK 1 ---
+#--- Inspect data ---
+df
+Task 2: Exploring Data Completeness.
+# --- WRITE YOUR CODE FOR TASK 2 ---
+null_marked=df.isnull()
+null_values=null_marked.sum()
+​
+#--- Inspect data ---
+null_values
+Task 3: Data Refinement for NASA Astronaut Data.
+#--- WRITE YOUR CODE FOR TASK 3 ---
+df.dropna(subset=['Alma_Mater'], inplace=True)
+remove_=df[(df['Death_Mission'].isnull()) &(~df['Death_Date'].isnull())].index
+df.drop(remove_,inplace=True)
+df['Birth_Date']=pd.to_datetime(df['Birth_Date'],dayfirst=True)
+df['Death_Date']=pd.to_datetime(df['Death_Date'],dayfirst=True)
+#--- Inspect data ---
+df
+Task 4: Preparing Data for SQL Analysis.
+# ...WRITE YOUR CODE FOR TASK 4 ...
+#export the cleaned data
+df.to_csv('astronauts.csv',index=False)
+#--- Inspect data ---
+Task 5: Data Download, Import, and Database Connection.
+# -- Load the sql extention ----
+%load_extsql
+​
+# --- Load your mysql db using credentials from the "DB" area ---
+%sqlmysql+pymysql://<user>:<password>@localhost/<db_name>
+Module 2:
+Task 1: Journeying Through Astronaut Profiles.
+%%sql
+select *from astronauts;
+Task 2: Astronaut Status: Counting the Cosmic Pioneers.
+%%sql
+selectstatus, Count(*) as Number
+from astronauts
+group by status
+Task 3: Exploring Astronauts' Military Branch Diversity.
+%% sql
+select Military_Branch, count(*) as Number
+from astronauts
+group by Military_Branch;
+Task 4: Top Military Ranks Among Astronauts.
+%%sql
+select Military_Rank, count(*) as Number
+from astronauts
+group by Military_Rank
+order by Number desc
+LIMIT 5;
+Task 5: Exploring Astronaut Demographics: Gender Insights.
+%% sql
+select gender, count(*) as Number
+from astronauts
+group by gender
+Task 6: Astronauts' Life Expectancy: A Cosmic Perspective
+%%sql
+​
+select round(avg(life_expectancy)) as Average_life_expectancy
+      from(
+select case when status='Deceased' then (year(Death_Date)-year(Birth_Date)) else(2023-year(Birth_Date)) END as life_expectancy
+        from astronauts) as T
+Task 7: Honoring Female Astronauts: Life Expectancy.
+%% sql
+select round(avg(Female_life_expectancy)) as Female_Average_life_expectancy
+from(
+select
+case when status='Deceased'and Gender='Female' then(year(Death_Date)-year(Birth_Date))
+     when status!='Deceased'and Gender='Female' then(2023-year(Birth_Date))
+else null
+END as Female_life_expectancy
+from astronauts) as T1
+Task 8: Celebrating Male Astronauts: Life Expectancy.
+%% sql
+select round(avg(Male_life_expectancy)) as Male_Average_life_expectancy
+from(
+select
+case when status='Deceased' and Gender='Male' then (year(Death_Date)-year(Birth_Date))
+     when status!='Deceased' and Gender='Male' then(2023-year(Birth_Date))
+else null
+END as Male_life_expectancy
+from astronauts) as le
+Task 9: Cosmic Scholars: Top Graduate Majors of Astronauts.
+%% sql
+select Graduate_Major, count(*) as Number
+from astronauts
+group b yGraduate_Major
+order by Number desc
+LIMIT 10
+Task 10: Educational Odyssey: Astronauts and Their Degrees.
+%% sql
+select
+count(*) as Number_of_Astronauts,
+sum(case when Undergraduate_major is not null then 1 else 0 end) as Astronauts_with_Undergraduate_Degrees,
+sum(case when Graduate_major is not null then 1 else 0 end) as Astronauts_with_Graduate_Degrees
+from astronauts
+Task 11: Astronaut Birthplaces: Launching from Earth's Diverse Cities.
+%% sql
+select substring_index(Birth_Place, ',',-1) as STATE, count(*) as Number
+from astronauts
+group by STATE
+order by Number desc
+LIMIT 5;
+Task 12: Voyages Beyond: Astronauts' Space Flights and Spacewalks.
+%%sql
+select round(avg(space_flights),2) as Average_Number_Of_Space_Flight,
+       round(avg(space_walks),2) as Average_Number_Of_Space_Walks
+from astronauts;
+
+
+
+
+
+
+
+
+
+
+
+
